@@ -1,7 +1,7 @@
 import tkinter as tk
 from components.editor.editor import Editor
 from components.timer.timer import Timer
-from components.todo.todo_list import TodoList
+from components.todo.task_dto import TodoList
 from components.export.html_exporter import export_editor_to_html
 from pathlib import Path
 

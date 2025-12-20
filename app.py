@@ -5,12 +5,15 @@ from dto.text_style_dto import TextStyleDTO
 
 from widgets.editor_menu import EditorMenu
 from widgets.editor import Editor
+from widgets.to_do_list import ToDoList
+from widgets.timer import Timer
+
 
 class App(Tk):
     def __init__(self):
         super().__init__()
         self.title('The Pure Note Project')
-        self.geometry('800x600')
+        self.geometry('1280x720')
 
         # Grid-Layout mit 3 Spalten
         self.grid_columnconfigure(0, weight=0)
@@ -25,6 +28,8 @@ class App(Tk):
         # Widgets
         self.editor_menu = EditorMenu(self, self.paragraph_formats, self.text_style_dto, self.on_update_button_click)
         self.editor = Editor(self, self.paragraph_formats, self.text_style_dto)
+        self.to_do_list = ToDoList(self, None, None)
+        #self.timer = Timer(self, 30, 30).grid(row=1, column=2, sticky='nsew')
 
 
         # Traces

@@ -9,7 +9,7 @@ class EditorMenu(Frame):
     Die werte werden über ein TextStyleDTO verwaltet, wenn sich diese ändern, werden die entsprechenden Traces getriggert.
     Bei Klick auf den Update-Button wird eine Callback-Funktion ausgeführt, die im App-Klasse definiert ist.
     """
-    def __init__(self, parent, paragraph_formats, text_style_dto, on_update_button_callback):
+    def __init__(self, parent, paragraph_formats, text_style_dto, update_button_callback):
         super().__init__(master=parent)
         self.grid(row=0, column=2, sticky='nsew', padx=15, pady=15)
         self._create_grid(4, 10)
@@ -22,7 +22,7 @@ class EditorMenu(Frame):
         paragraph_format_menu.grid(row=1, column=0, columnspan=4, sticky='ew')
 
         # Absatzformat aktualisieren Button
-        update_paragraph_format_button = Button(self, text='Absatzformat aktualisieren', command=on_update_button_callback)
+        update_paragraph_format_button = Button(self, text='Absatzformat aktualisieren', command=update_button_callback)
         update_paragraph_format_button.grid(row=2, columnspan=4, sticky='ew')
 
         # Schriftfamilie
