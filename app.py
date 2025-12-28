@@ -78,10 +78,20 @@ class App(Tk):
         self.editor.update_preset_style()
 
     def on_add_task_button_click(self):
+        """
+        Wird getriggert, wenn der Add-Button im ToDoList-Widget geklickt wird.
+        Es wird ein neuer Task im ToDoList-Widget hinzugefügt und wenn eine Auswahl im Editor vorhanden ist,
+        wird der Text der Auswahl farblich passend hervorgehoben.
+        Dabei wird im Editor ein neues Tag erstellt, das mit dem Titel des Tasks übereinstimmt.
+        """
         task = self.to_do_list.add_task()
-        self.editor.highlight_range(task.title, task.color)
+        self.editor.highlight_selection(task.title, task.color)
 
     def on_checkbutton_clicked(self, title):
+        """
+        Wird getriggert, wenn ein Checkbutton im ToDoList-Widget geklickt wird.
+        Es werden alle Tags entfernt, die mit dem Titel des Checkbuttons übereinstimmen.
+        """
         self.editor.remove_tag(title)
 
 if __name__ == '__main__':

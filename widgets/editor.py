@@ -1,6 +1,13 @@
 from tkinter import *
 
 class Editor(Text):
+    """
+    Diese Klasse erweitert das Tkinter Text Widget um die Fähigkeit,
+    Absatz- und Inline-Stile zu verwalten und anzuwenden.
+    Sie verwendet ein TextStyleDTO, um die aktuellen Stil-Eigenschaften zu speichern und anzuwenden.
+    Die Stile werden als Tags im Text Widget verwaltet, wobei jeder Tag einem eindeutigen Token entspricht,
+    der aus den Stil-Eigenschaften generiert wird.
+    """
     def __init__(self, parent, paragraph_formats, text_style_dto):
         super().__init__(master=parent)
         self.paragraph_formats = paragraph_formats
@@ -8,8 +15,6 @@ class Editor(Text):
 
         # Speichert die generierten Tokens und deren zugehörigen TextStyles als dict
         self.token_cache = {}
-
-        self.task_cache = {}
 
         # Beinhaltet den aktuellen Token der für tags verwendet wird
         self.current_token = None
@@ -124,18 +129,27 @@ class Editor(Text):
 
         self.paragraph_formats.set_style_preset(paragraph_key, self.text_style_dto.map_to_text_style())
 
-    def highlight_range(self, tag, color):
+    def highlight_selection(self, tag, color):
+        """
+        Versucht eine Text-Selektion zu finden, wenn keine gefunden wird passiert nichts.
+        Wenn eine Selektion gefunden wurde, wird ein Hintergrund mit dem angegebenen color auf die Selektion angewendet.
+        Der Name des Tags ist der title der To-Do Aufgabe.
+        Wird verwendet, wenn eine To-Do Aufgabe hinzugefügt wird, um den Text im Editor hervorzuheben mit der passenden To-Do-Farbe.
+        """
         try:
             start = self.index(SEL_FIRST)
             end = self.index(SEL_LAST)
 
             self.tag_configure(tag, background=color)
             self.tag_add(tag, start, end)
-
         except TclError:
             pass
 
     def remove_tag(self, tag):
+        """
+        Entfernt einen definierten Tag aus dem gesamten Text.
+        Wird verwendet wenn eine To-Do Task gelöscht wird.
+        """
         self.tag_remove(tag, '1.0', 'end')
 
     def _change_text_style_with_cursor(self, _):
@@ -143,6 +157,8 @@ class Editor(Text):
         Wird ausgelöst, wenn mit der Maus oder den Pfeiltasten durch den Text navigiert wird.
         Nimmt den Tag des linken Cursors und sucht den passenden TextStyle im Token-Cache.
         Wenn der Tag gefunden wird, wird der TextStyleDTO aktualisiert.
+        ToDo: Wenn in die Mitte eines Tasks geklickt wird sollte in diesem Still weiter geschrieben werden (mit Hintergrund).
+        ToDo: Oder ganzen Absatz einfärben
         """
         last_cursor_pos = self.index(INSERT + '-1c')
         tags_at_last_cursor_pos = self.tag_names(last_cursor_pos)
