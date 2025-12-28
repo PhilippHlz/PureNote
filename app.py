@@ -1,12 +1,13 @@
 from tkinter import *
 
 from model.paragraph_formats import ParagraphFormats
-from dto.text_style_dto import TextStyleDTO
+
+from dto.text_style_dto import TextStyleDto
+from dto.to_do_dto import ToDoDto
 
 from widgets.editor_menu import EditorMenu
 from widgets.editor import Editor
 from widgets.to_do_list import ToDoList
-from widgets.timer import Timer
 
 
 class App(Tk):
@@ -23,14 +24,13 @@ class App(Tk):
 
         # Data
         self.paragraph_formats = ParagraphFormats()
-        self.text_style_dto = TextStyleDTO(self, 'p', self.paragraph_formats.get_style_preset('p'))
+        self.text_style_dto = TextStyleDto(self, 'p', self.paragraph_formats.get_style_preset('p'))
 
         # Widgets
         self.editor_menu = EditorMenu(self, self.paragraph_formats, self.text_style_dto, self.on_update_button_click)
         self.editor = Editor(self, self.paragraph_formats, self.text_style_dto)
-        self.to_do_list = ToDoList(self, None, None)
+        self.to_do_list = ToDoList(self, self.on_add_task_button_click, self.on_checkbutton_clicked)
         #self.timer = Timer(self, 30, 30).grid(row=1, column=2, sticky='nsew')
-
 
         # Traces
         self.text_style_dto.set_paragraph_format_trace(self.on_paragraph_format_change)
@@ -76,6 +76,13 @@ class App(Tk):
         Aktualisiert den Preset-Stil im Editor und wendet den neuen Stil auf alle Absätze an die das gleiche Absatzformat haben.
         """
         self.editor.update_preset_style()
+
+    def on_add_task_button_click(self):
+        task = self.to_do_list.add_task()
+        self.editor.highlight_range(task.title, task.color)
+
+    def on_checkbutton_clicked(self, title):
+        self.editor.remove_tag(title)
 
 if __name__ == '__main__':
     app = App()

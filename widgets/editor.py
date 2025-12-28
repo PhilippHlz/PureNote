@@ -9,6 +9,8 @@ class Editor(Text):
         # Speichert die generierten Tokens und deren zugehörigen TextStyles als dict
         self.token_cache = {}
 
+        self.task_cache = {}
+
         # Beinhaltet den aktuellen Token der für tags verwendet wird
         self.current_token = None
         self.set_current_token()
@@ -122,6 +124,20 @@ class Editor(Text):
 
         self.paragraph_formats.set_style_preset(paragraph_key, self.text_style_dto.map_to_text_style())
 
+    def highlight_range(self, tag, color):
+        try:
+            start = self.index(SEL_FIRST)
+            end = self.index(SEL_LAST)
+
+            self.tag_configure(tag, background=color)
+            self.tag_add(tag, start, end)
+
+        except TclError:
+            pass
+
+    def remove_tag(self, tag):
+        self.tag_remove(tag, '1.0', 'end')
+
     def _change_text_style_with_cursor(self, _):
         """
         Wird ausgelöst, wenn mit der Maus oder den Pfeiltasten durch den Text navigiert wird.
@@ -155,7 +171,8 @@ class Editor(Text):
         token = self.current_token
         tag_font = self.text_style_dto.generate_font()
         tag_color = self.text_style_dto.color.get()
+        tag_background = 'yellow' if self.text_style_dto.highlight.get() else None
         line_height = self.text_style_dto.line_height.get()
         space_before = self.text_style_dto.space_before.get()
         space_after = self.text_style_dto.space_after.get()
-        self.tag_configure(token, font=tag_font, foreground=tag_color, spacing1=space_before, spacing2=line_height, spacing3=space_after)
+        self.tag_configure(token, font=tag_font, foreground=tag_color, spacing1=space_before, spacing2=line_height, spacing3=space_after, background=tag_background)

@@ -3,7 +3,7 @@ from tkinter.font import Font
 
 from model.text_style import TextStyle
 
-class TextStyleDTO:
+class TextStyleDto:
     """
     Repräsentiert ein DTO, das verwendet wird, um Stilwerte an andere Objekte weiterzugeben
     und gleichzeitig auf Änderungen über Traces zu reagieren.
