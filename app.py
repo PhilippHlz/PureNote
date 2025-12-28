@@ -3,7 +3,6 @@ from tkinter import *
 from model.paragraph_formats import ParagraphFormats
 
 from dto.text_style_dto import TextStyleDto
-from dto.to_do_dto import ToDoDto
 
 from widgets.editor_menu import EditorMenu
 from widgets.editor import Editor
