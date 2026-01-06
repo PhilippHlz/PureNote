@@ -15,28 +15,114 @@ class ToDoList(Frame):
         self. on_delete_task_callback = on_delete_task_callback
         self.to_do_list = {}
 
-        self.grid(row=0, column=0, sticky='nsew', padx=15, pady=15)
+        # NOTE: Kein eigenes .grid() hier mehr in den Parent rein!
+        # Das macht App.py zentral, damit das Layout stabil bleibt.
+        self.configure(padx=15, pady=15)
 
         self.bold_font = Font(weight='bold', size=9)
         self.regular_font = Font(size=9)
 
-        Label(self, text='ToDo Hinzufügen', font=self.bold_font).pack(anchor='w')
+        # Layout intern (Input oben, Tasks scrollen unten)
+        self.grid_rowconfigure(0, weight=0)  # input area
+        self.grid_rowconfigure(1, weight=0)  # header "Deine ToDos"
+        self.grid_rowconfigure(2, weight=1)  # scroll area
+        self.grid_columnconfigure(0, weight=1)
+
+        # --- UI: Input Bereich (fix) ---
+        top = Frame(self)
+        top.grid(row=0, column=0, sticky="ew")
+        top.grid_columnconfigure(0, weight=1)
+
+        Label(top, text='ToDo Hinzufügen', font=self.bold_font).pack(anchor='w')
 
         # Titel
-        Label(self, text='Titel', font=self.regular_font).pack(anchor='w')
-        self.title = Entry(self, width=25, font=self.regular_font)
+        Label(top, text='Titel', font=self.regular_font).pack(anchor='w')
+        self.title = Entry(top, width=25, font=self.regular_font)
         self.title.pack(anchor='w')
 
         # Beschreibung
-        Label(self, text='Beschreibung', font=self.regular_font).pack(anchor='w')
-        self.description = Entry(self, width=25, font=self.regular_font)
+        Label(top, text='Beschreibung', font=self.regular_font).pack(anchor='w')
+        self.description = Entry(top, width=25, font=self.regular_font)
         self.description.pack(anchor='w')
 
         # Task hinzufügen Button
-        Button(self, text='ToDo hinzufügen', command=on_add_task_button_callback).pack(anchor='w')
+        Button(top, text='ToDo hinzufügen', command=on_add_task_button_callback).pack(anchor='w')
 
-        Label(self, text='Deine ToDos', font=self.bold_font).pack(anchor='w', pady=(25, 10))
+        header = Frame(self)
+        header.grid(row=1, column=0, sticky="ew")
+        Label(header, text='Deine ToDos', font=self.bold_font).pack(anchor='w', pady=(25, 10))
         #ToDo: tasks scrollbar machen geht wohl mit canvas und scrollbar
+
+        # --- Scrollbarer Bereich nur für Tasks ---
+        self.tasks_wrapper = Frame(self)
+        self.tasks_wrapper.grid(row=2, column=0, sticky="nsew")
+
+        self.tasks_canvas = Canvas(self.tasks_wrapper, highlightthickness=0, bd=0)
+        self.tasks_scrollbar = Scrollbar(self.tasks_wrapper, orient='vertical', command=self.tasks_canvas.yview)
+        self.tasks_canvas.configure(yscrollcommand=self.tasks_scrollbar.set)
+
+        self.tasks_canvas.pack(side='left', fill='both', expand=True)
+        # Scrollbar wird nur angezeigt, wenn wirklich nötig
+        # (damit die linke Spalte nicht “wackelt” / unnötig breiter wirkt)
+
+        self.tasks_frame = Frame(self.tasks_canvas)
+        self._tasks_window_id = self.tasks_canvas.create_window((0, 0), window=self.tasks_frame, anchor='nw')
+
+        # Events zum updaten
+        self.tasks_frame.bind("<Configure>", self._on_tasks_frame_configure)
+        self.tasks_canvas.bind("<Configure>", self._on_canvas_configure)
+
+        # Mousewheel nur, wenn Maus über dem Canvas ist (kein globales bind_all)
+        self.tasks_canvas.bind("<Enter>", self._bind_mousewheel)
+        self.tasks_canvas.bind("<Leave>", self._unbind_mousewheel)
+
+        # initial
+        self._update_scrollbar_visibility()
+
+    def _bind_mousewheel(self, _event=None):
+        self.tasks_canvas.bind_all("<MouseWheel>", self._on_mousewheel)      # Windows / Mac
+        self.tasks_canvas.bind_all("<Button-4>", self._on_mousewheel_linux)  # Linux up
+        self.tasks_canvas.bind_all("<Button-5>", self._on_mousewheel_linux)  # Linux down
+
+    def _unbind_mousewheel(self, _event=None):
+        self.tasks_canvas.unbind_all("<MouseWheel>")
+        self.tasks_canvas.unbind_all("<Button-4>")
+        self.tasks_canvas.unbind_all("<Button-5>")
+
+    def _on_tasks_frame_configure(self, _event):
+        self.tasks_canvas.configure(scrollregion=self.tasks_canvas.bbox("all"))
+        self._update_scrollbar_visibility()
+
+    def _on_canvas_configure(self, event):
+        # Canvas-Breite an Task-Frame weiterreichen, damit Tasks nicht abgeschnitten werden
+        self.tasks_canvas.itemconfig(self._tasks_window_id, width=event.width)
+        self._update_scrollbar_visibility()
+
+    def _scrollbar_needed(self):
+        self.update_idletasks()
+        content_height = self.tasks_frame.winfo_reqheight()
+        visible_height = self.tasks_canvas.winfo_height()
+        return content_height > visible_height + 2  # +2 als kleiner Puffer
+
+    def _update_scrollbar_visibility(self):
+        if self._scrollbar_needed():
+            if not self.tasks_scrollbar.winfo_ismapped():
+                self.tasks_scrollbar.pack(side='right', fill='y')
+        else:
+            if self.tasks_scrollbar.winfo_ismapped():
+                self.tasks_scrollbar.pack_forget()
+            self.tasks_canvas.yview_moveto(0)
+
+    def _on_mousewheel(self, event):
+        if self._scrollbar_needed():
+            self.tasks_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def _on_mousewheel_linux(self, event):
+        if self._scrollbar_needed():
+            if event.num == 4:
+                self.tasks_canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                self.tasks_canvas.yview_scroll(1, "units")
 
     def add_task(self):
         """
@@ -52,11 +138,15 @@ class ToDoList(Frame):
         if not title or title in self.to_do_list:
             return None
 
-        task = Task(self, title, description, delete_callback=self.remove_task)
+        # Task in den scrollbaren tasks_frame packen (nicht direkt in self)
+        task = Task(self.tasks_frame, title, description, delete_callback=self.remove_task)
         self.to_do_list[title] = task
 
         self.title.delete(0, END)
         self.description.delete(0, END)
+
+        self.tasks_canvas.configure(scrollregion=self.tasks_canvas.bbox("all"))
+        self._update_scrollbar_visibility()
         return task
 
     def remove_task(self, title):
@@ -67,6 +157,9 @@ class ToDoList(Frame):
         if title in self.to_do_list:
             del self.to_do_list[title] # Entfernt Task aus der to_do_list
         self.on_delete_task_callback(title) # Entfernt Task aus dem Editor
+
+        self.tasks_canvas.configure(scrollregion=self.tasks_canvas.bbox("all"))
+        self._update_scrollbar_visibility()
 
 class Task(Frame):
     """
