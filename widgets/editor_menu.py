@@ -9,10 +9,12 @@ class EditorMenu(Frame):
     Die werte werden über ein TextStyleDTO verwaltet, wenn sich diese ändern, werden die entsprechenden Traces getriggert.
     Bei Klick auf den Update-Button wird eine Callback-Funktion ausgeführt, die im App-Klasse definiert ist.
     """
-    def __init__(self, parent, paragraph_formats, text_style_dto, update_button_callback):
+    def __init__(self, parent, paragraph_formats, text_style_dto, update_button_callback, export_html_callback):
         super().__init__(master=parent)
-        self.grid(row=0, column=2, sticky='nsew', padx=15, pady=15)
-        self._create_grid(4, 10)
+
+        # mehr Zeilen, weil wir unten noch Export ergänzen
+        self._create_grid(4, 14)
+
         bold_font = Font(weight='bold', size=9)
         regular_font = Font(size=9)
 
@@ -69,14 +71,19 @@ class EditorMenu(Frame):
         space_after_spinbox = Spinbox(self, from_=0, to=100, increment=1, textvariable=text_style_dto.space_after, width=3)
         space_after_spinbox.grid(row=10, column=3, columnspan=1, sticky='ew')
 
+        # ===== Export (Position 2 in deinem Screenshot) =====
+        Label(self, text='Export', font=bold_font).grid(row=12, columnspan=4, sticky='w', pady=(25, 0))
+        export_button = Button(self, text='HTML exportieren', command=export_html_callback)
+        export_button.grid(row=13, columnspan=4, sticky='ew')
+
     def _create_grid(self, column, row):
         """
         Erstellt ein Grid-Layout mit der angegebenen Anzahl an Spalten und Zeilen.
-        
+
         :param column: Spaltenanzahl
         :param row: Zeilenanzahl
         """
         for i in range(column):
-            self.grid_columnconfigure(i)
+            self.grid_columnconfigure(i, weight=1)
         for i in range(row):
-            self.grid_rowconfigure(i)
+            self.grid_rowconfigure(i, weight=0)
