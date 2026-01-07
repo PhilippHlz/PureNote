@@ -5,6 +5,7 @@ from model.paragraph_formats import ParagraphFormats
 from dto.text_style_dto import TextStyleDto
 
 from widgets.editor_menu import EditorMenu
+from widgets.timer import Timer
 from widgets.editor import Editor
 from widgets.to_do_list import ToDoList
 from widgets.html_exporter import HtmlExporter
@@ -22,16 +23,20 @@ class App(Tk):
         self.grid_columnconfigure(2, weight=0)
         self.grid_rowconfigure(0, weight=1)
 
+        # Rechter Frame
+        self.right_panel = Frame(self)
+        self.right_panel.grid(row=0, column=2, sticky='nsew', padx=15, pady=15)
+
         # Data
         self.paragraph_formats = ParagraphFormats()
         self.text_style_dto = TextStyleDto(self, 'p', self.paragraph_formats.get_style_preset('p'))
-        self.exporter = HtmlExporter()
 
         # Widgets
-        self.editor_menu = EditorMenu(self, self.paragraph_formats, self.text_style_dto, self.on_update_button_click, self.on_export)
-        self.editor = Editor(self, self.paragraph_formats, self.text_style_dto)
         self.to_do_list = ToDoList(self, self.on_add_task_button_click, self.on_checkbutton_clicked)
-        #self.timer = Timer(self, 30, 30).grid(row=1, column=2, sticky='nsew')
+        self.editor = Editor(self, self.paragraph_formats, self.text_style_dto)
+        self.editor_menu = EditorMenu(self.right_panel, self.paragraph_formats, self.text_style_dto, self.on_update_button_click)
+        self.timer = Timer(self.right_panel, 30, 30)
+        self.exporter = HtmlExporter(self.right_panel, self.editor)
 
         # Traces
         self.text_style_dto.set_paragraph_format_trace(self.on_paragraph_format_change)

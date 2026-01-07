@@ -1,4 +1,5 @@
 from tkinter.filedialog import asksaveasfilename
+from tkinter import *
 from tkinter import messagebox
 from html import escape
 
@@ -14,8 +15,15 @@ STYLE_TAG_MAPPING = {
 }
 
 
-class HtmlExporter:
-    def export(self, editor):
+class HtmlExporter(Frame):
+    def __init__(self, parent, editor):
+        super().__init__(master=parent)
+        self.editor = editor
+        self.export_button = Button(self, text="HTML Exportieren", command=self.export)
+        self.export_button.pack(fill="x")
+        self.pack(fill="x", pady=(25, 0))
+
+    def export(self):
         file_path = asksaveasfilename(
             defaultextension=".html",
             filetypes=[("HTML-Dateien", "*.html")],
@@ -25,25 +33,25 @@ class HtmlExporter:
         if not file_path:
             return
 
-        html = self._build_html(editor)
+        html = self._build_html()
 
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(html)
 
         messagebox.showinfo("Export", "HTML Export erfolgreich gespeichert.")
 
-    def _build_html(self, editor):
-        lines = editor.get("1.0", "end-1c").split("\n")
+    def _build_html(self):
+        lines = self.editor.get("1.0", "end-1c").split("\n")
         html_lines = []
 
         for index, line in enumerate(lines, start=1):
             start_index = f"{index}.0"
-            tags = editor.tag_names(start_index)
+            tags = self.editor.tag_names(start_index)
 
-            paragraph_tag = self._get_paragraph_tag(tags, editor)
+            paragraph_tag = self._get_paragraph_tag(tags)
             escaped_text = escape(line)
 
-            highlight_style = self._get_highlight(editor, tags)
+            highlight_style = self._get_highlight(tags)
             if highlight_style:
                 escaped_text = f'<mark style="background-color:{highlight_style};">{escaped_text}</mark>'
 
@@ -63,27 +71,27 @@ class HtmlExporter:
 </html>
 """
 
-    def _get_paragraph_tag(self, tags, editor):
-        if not hasattr(editor, "token_cache"):
+    def _get_paragraph_tag(self, tags):
+        if not hasattr(self.editor, "token_cache"):
             return "p"
 
         for t in tags:
-            if t in editor.token_cache:
-                key = editor.token_cache[t].get("paragraph_key", "p")
+            if t in self.editor.token_cache:
+                key = self.editor.token_cache[t].get("paragraph_key", "p")
                 key = key.lower()
                 return STYLE_TAG_MAPPING.get(key, "p")
 
         return "p"
 
-    def _get_highlight(self, editor, tags):
+    def _get_highlight(self, tags):
         for t in tags:
-            if hasattr(editor, "token_cache") and t in editor.token_cache:
+            if hasattr(self.editor, "token_cache") and t in self.editor.token_cache:
                 continue
             if t == "sel":
                 continue
 
             try:
-                bg = editor.tag_cget(t, "background")
+                bg = self.editor.tag_cget(t, "background")
                 if bg:
                     return bg
             except Exception:

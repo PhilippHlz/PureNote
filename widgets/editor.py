@@ -186,9 +186,13 @@ class Editor(Text):
         """
         token = self.current_token
         tag_font = self.text_style_dto.generate_font()
+
         tag_color = self.text_style_dto.color.get()
         tag_background = 'yellow' if self.text_style_dto.highlight.get() else None
         line_height = self.text_style_dto.line_height.get()
         space_before = self.text_style_dto.space_before.get()
         space_after = self.text_style_dto.space_after.get()
-        self.tag_configure(token, font=tag_font, foreground=tag_color, spacing1=space_before, spacing2=line_height, spacing3=space_after, background=tag_background)
+        try:
+            self.tag_configure(token, font=tag_font, foreground=tag_color, spacing1=space_before, spacing2=line_height, spacing3=space_after, background=tag_background)
+        except TclError:
+            pass

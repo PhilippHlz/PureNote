@@ -34,7 +34,6 @@ class ToDoList(Frame):
 
         # Task hinzufügen Button
         Button(self, text='ToDo hinzufügen', command=on_add_task_button_callback).pack(anchor='w')
-
         Label(self, text='Deine ToDos', font=self.bold_font).pack(anchor='w', pady=(25, 10))
         
 
