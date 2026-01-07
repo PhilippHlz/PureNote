@@ -9,7 +9,6 @@ class Timer(tk.Frame):
     def __init__(self, master, work_time=30, break_time=5):
         super().__init__(master)
 
-        # ===== State =====
         self.work_minutes = tk.IntVar(value=work_time)
         self.break_minutes = tk.IntVar(value=break_time)
 
@@ -24,39 +23,58 @@ class Timer(tk.Frame):
         self.active_after = None
         self.is_fresh_start = True
 
-
-
         settings = tk.Frame(self)
-        settings.pack(anchor="w", fill="x", padx=10, pady=(6, 4))
+        settings.pack(anchor="w", pady=(4, 2))
 
-        tk.Label(settings, text="Fokus (Min):").grid(row=0, column=0, sticky="w")
-        tk.Spinbox(settings, from_=1, to=120, width=4, textvariable=self.work_minutes).grid(
-            row=0, column=1, sticky="w", padx=(6, 12)
-        )
+        tk.Label(settings, text="Fokus (Min):", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
+        tk.Spinbox(
+            settings,
+            from_=1,
+            to=120,
+            width=4,
+            textvariable=self.work_minutes,
+            font=("Arial", 9)
+        ).grid(row=0, column=1, sticky="w", padx=(4, 10))
 
-        tk.Label(settings, text="Pause (Min):").grid(row=0, column=2, sticky="w")
-        tk.Spinbox(settings, from_=1, to=60, width=4, textvariable=self.break_minutes).grid(
-            row=0, column=3, sticky="w", padx=(6, 0)
-        )
+        tk.Label(settings, text="Pause (Min):", font=("Arial", 9)).grid(row=0, column=2, sticky="w")
+        tk.Spinbox(
+            settings,
+            from_=1,
+            to=60,
+            width=4,
+            textvariable=self.break_minutes,
+            font=("Arial", 9)
+        ).grid(row=0, column=3, sticky="w", padx=(4, 0))
 
-        self.phase_label = tk.Label(self, font=("Arial", 12, "bold"))
-        self.phase_label.pack(anchor="w", padx=10, pady=(0, 4))
+        self.phase_label = tk.Label(self, font=("Arial", 9, "bold"), fg="#1f2937")
+        self.phase_label.pack(anchor="w", pady=(2, 0))
 
-        self.remaining_time_label = tk.Label(self, font=("Arial", 20))
-        self.remaining_time_label.pack(anchor="w", padx=10, pady=(0, 6))
+        self.remaining_time_label = tk.Label(self, font=("Arial", 13), fg="#1f2937")
+        self.remaining_time_label.pack(anchor="w", pady=(0, 6))
 
-        # Buttons: outer frame füllt Breite, inner frame ist automatisch mittig
         button_outer = tk.Frame(self)
-        button_outer.pack(fill="x", padx=10, pady=(0, 8))
+        button_outer.pack(anchor="w", pady=(0, 6))
 
         button_frame = tk.Frame(button_outer)
-        button_frame.pack()  # zentriert
+        button_frame.pack(anchor="w")
 
-        self.start_stop_button = tk.Button(button_frame, text="Start", width=8, command=self._toggle_timer)
-        self.start_stop_button.pack(side=tk.LEFT, padx=5)
+        self.start_stop_button = tk.Button(
+            button_frame,
+            text="Start",
+            width=7,
+            font=("Arial", 9),
+            command=self._toggle_timer
+        )
+        self.start_stop_button.pack(side=tk.LEFT, padx=4)
 
-        self.reset_button = tk.Button(button_frame, text="Reset", width=8, command=self._reset_timer)
-        self.reset_button.pack(side=tk.LEFT, padx=5)
+        self.reset_button = tk.Button(
+            button_frame,
+            text="Reset",
+            width=7,
+            font=("Arial", 9),
+            command=self._reset_timer
+        )
+        self.reset_button.pack(side=tk.LEFT, padx=4)
 
         self._reset_timer()
         self.pack(pady=(25, 0))
@@ -72,7 +90,6 @@ class Timer(tk.Frame):
             if self.is_fresh_start:
                 self._apply_settings()
                 self.is_fresh_start = False
-
             self.running = True
             self.start_stop_button.config(text="Pause")
             self._update_ui()
@@ -87,16 +104,13 @@ class Timer(tk.Frame):
 
     def _countdown(self):
         remaining = self.remaining_work_time if self.phase == self.WORK_PHASE else self.remaining_break_time
-
         if remaining <= 0:
             self._on_phase_finished()
             return
-
         if self.phase == self.WORK_PHASE:
             self.remaining_work_time -= 1
         else:
             self.remaining_break_time -= 1
-
         self._update_ui()
         self.active_after = self.after(1000, self._countdown)
 
@@ -109,7 +123,6 @@ class Timer(tk.Frame):
             messagebox.showinfo("Timer", "Pause beendet. Neue Fokuszeit startet.")
             self.phase = self.WORK_PHASE
             self.remaining_work_time = self.work_time
-
         self._update_ui()
         if self.running:
             self._countdown()
@@ -118,23 +131,22 @@ class Timer(tk.Frame):
         if self.active_after:
             self.after_cancel(self.active_after)
             self.active_after = None
-
         self.running = False
         self.phase = self.WORK_PHASE
         self.is_fresh_start = True
-
         self._apply_settings()
         self.start_stop_button.config(text="Start")
         self._update_ui()
 
     def _update_ui(self):
         if self.phase == self.WORK_PHASE:
-            self.phase_label.config(text="Fokuszeit", fg="green")
+            self.phase_label.config(text="Fokuszeit", fg="#1f2937")
             self.remaining_time_label.config(text=self._format_time(self.remaining_work_time))
         else:
-            self.phase_label.config(text="Pause", fg="blue")
+            self.phase_label.config(text="Pause", fg="#1f2937")
             self.remaining_time_label.config(text=self._format_time(self.remaining_break_time))
 
     @staticmethod
     def _format_time(seconds):
         return f"{seconds // 60:02}:{seconds % 60:02}"
+
