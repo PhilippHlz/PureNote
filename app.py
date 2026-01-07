@@ -1,7 +1,6 @@
 from tkinter import *
 
 from model.paragraph_formats import ParagraphFormats
-
 from dto.text_style_dto import TextStyleDto
 
 from widgets.editor_menu import EditorMenu
@@ -9,6 +8,7 @@ from widgets.timer import Timer
 from widgets.editor import Editor
 from widgets.to_do_list import ToDoList
 from widgets.html_exporter import HtmlExporter
+from widgets.music_player import MusicPlayer
 
 
 class App(Tk):
@@ -34,16 +34,24 @@ class App(Tk):
         # Widgets
         self.to_do_list = ToDoList(self, self.on_add_task_button_click, self.on_checkbutton_clicked)
         self.editor = Editor(self, self.paragraph_formats, self.text_style_dto)
-        self.editor_menu = EditorMenu(self.right_panel, self.paragraph_formats, self.text_style_dto, self.on_update_button_click)
+        self.editor_menu = EditorMenu(
+            self.right_panel,
+            self.paragraph_formats,
+            self.text_style_dto,
+            self.on_update_button_click
+        )
         self.timer = Timer(self.right_panel, 30, 30)
         self.exporter = HtmlExporter(self.right_panel, self.editor)
+
+        # Musikplayer 
+        self.music_player = MusicPlayer(self.to_do_list)
+        self.music_player.pack(side="bottom", anchor="w", padx=15, pady=(10, 10))
 
         # Traces
         self.text_style_dto.set_paragraph_format_trace(self.on_paragraph_format_change)
         self.text_style_dto.set_inline_trace(self.on_inline_style_change)
 
         self.mainloop()
-        
 
     def on_paragraph_format_change(self, *_):
         """
@@ -70,7 +78,6 @@ class App(Tk):
         sonst würde für jedes Sets des TextStyleDTO noch ein Trace getriggert werden.
         Danach wird der aktuelle Token im Editor gesetzt und der Stil auf die Auswahl angewendet.
         """
-
         if self.text_style_dto.trace_break:
             return
 
@@ -80,7 +87,8 @@ class App(Tk):
     def on_update_button_click(self, *_):
         """
         Wird getriggert, wenn der Update-Button im EditorMenu geklickt wird.
-        Aktualisiert den Preset-Stil im Editor und wendet den neuen Stil auf alle Absätze an die das gleiche Absatzformat haben.
+        Aktualisiert den Preset-Stil im Editor und wendet den neuen Stil auf alle Absätze an,
+        die das gleiche Absatzformat haben.
         """
         self.editor.update_preset_style()
 
@@ -97,7 +105,6 @@ class App(Tk):
         Öffnet einen Speichern-Dialog und exportiert den Inhalt des Editors als HTML-Datei.
         """
         self.exporter.export(self.editor)
-
 
     def on_add_task_button_click(self):
         """
@@ -120,3 +127,4 @@ class App(Tk):
 
 if __name__ == '__main__':
     app = App()
+
