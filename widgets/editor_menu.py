@@ -2,6 +2,9 @@ from tkinter import *
 from tkinter.font import Font
 from tkinter import font
 
+# Common cross-platform font families
+FONT_LIST = ['Arial', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia','Impact']
+
 class EditorMenu(Frame):
     """
     Stellt das rechte Menü für die Textformatierung im Editor bereit.
@@ -9,6 +12,8 @@ class EditorMenu(Frame):
     Die werte werden über ein TextStyleDTO verwaltet, wenn sich diese ändern, werden die entsprechenden Traces getriggert.
     Bei Klick auf den Update-Button wird eine Callback-Funktion ausgeführt, die im App-Klasse definiert ist.
     """
+
+
 
     def __init__(self, parent, paragraph_formats, text_style_dto, update_button_callback):
         super().__init__(master=parent)
@@ -28,7 +33,7 @@ class EditorMenu(Frame):
 
         # Schriftfamilie
         Label(self, text='Schrift', font=bold_font).grid(row=3, columnspan=4, sticky='w', pady=(25, 0))
-        font_family_menu = OptionMenu(self, text_style_dto.family, *font.families())
+        font_family_menu = OptionMenu(self, text_style_dto.family, *FONT_LIST)
         font_family_menu.grid(row=4, columnspan=3, sticky='ew')
 
         # Schriftgröße

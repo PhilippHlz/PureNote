@@ -20,4 +20,5 @@ class TextStyle:
         Generiert einen individuellen Token anhand der übergebenen Parameter.
         :return: Ein Token, der aus allen Parametern besteht.
         """
-        return f"{self.family}_{self.size}_{self.bold}_{self.italic}_{self.underline}_{self.highlight}_{self.color}_{self.line_height}_{self.space_before}_{self.space_after}"
+        safe_family = self.family.replace(' ', '_')
+        return f"{safe_family}_{self.size}_{self.bold}_{self.italic}_{self.underline}_{self.highlight}_{self.color}_{self.line_height}_{self.space_before}_{self.space_after}"
