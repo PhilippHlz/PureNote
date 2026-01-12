@@ -3,7 +3,7 @@ from tkinter import *
 from tkinter import messagebox
 from html import escape
 
-
+# Mapping von internen Absatzformat-Keys auf die entsprechenden HTML-Tags
 STYLE_TAG_MAPPING = {
     "p": "p",
     "h1": "h1",
@@ -14,15 +14,18 @@ STYLE_TAG_MAPPING = {
     "h6": "h6",
 }
 
-
+# Kapselt die komplette Logik für den HTML-Export als eigenes Frame-Widget.
 class HtmlExporter(Frame):
     def __init__(self, parent, editor):
+        # Parent-Frame initialisieren und Referenz auf den Editor speichern
         super().__init__(master=parent)
         self.editor = editor
+        # Button für den Export
         self.export_button = Button(self, text="HTML Exportieren", command=self.export)
         self.export_button.pack(fill="x")
         self.pack(fill="x", pady=(25, 0))
 
+    # Öffnet einen Speichern-Dialog und schreibt den generierten HTML-Code in eine Datei.
     def export(self):
         file_path = asksaveasfilename(
             defaultextension=".html",
@@ -30,6 +33,7 @@ class HtmlExporter(Frame):
             title="HTML Export speichern"
         )
 
+        # Abbruch, wenn der Dialog ohne Auswahl geschlossen wird
         if not file_path:
             return
 
@@ -40,6 +44,7 @@ class HtmlExporter(Frame):
 
         messagebox.showinfo("Export", "HTML Export erfolgreich gespeichert.")
 
+    # Baut den vollständigen HTML-String aus dem Inhalt und den Tags des Editors.
     def _build_html(self):
         lines = self.editor.get("1.0", "end-1c").split("\n")
         html_lines = []
@@ -48,9 +53,12 @@ class HtmlExporter(Frame):
             start_index = f"{index}.0"
             tags = self.editor.tag_names(start_index)
 
+            # Absatzformat aus den Tags bestimmen (p, h1–h6)
             paragraph_tag = self._get_paragraph_tag(tags)
+            # Text für HTML escapen 
             escaped_text = escape(line)
 
+            # Optionales Highlight (ToDo-Markierungen etc.) als <mark>-Tag exportieren
             highlight_style = self._get_highlight(tags)
             if highlight_style:
                 escaped_text = f'<mark style="background-color:{highlight_style};">{escaped_text}</mark>'
@@ -71,7 +79,9 @@ class HtmlExporter(Frame):
 </html>
 """
 
+    # Ermittelt anhand der Token-Tags das passende HTML-Tag für den Absatz.
     def _get_paragraph_tag(self, tags):
+        # Stil-Tags aus dem Token-Cache ignorieren
         if not hasattr(self.editor, "token_cache"):
             return "p"
 
@@ -83,10 +93,13 @@ class HtmlExporter(Frame):
 
         return "p"
 
+    # Prüft, ob für die aktuelle Zeile ein Hintergrund-Tag gesetzt ist.
+    # Gibt ggf. die Hintergrundfarbe zurück, die als <mark>-Style verwendet wird.
     def _get_highlight(self, tags):
         for t in tags:
             if hasattr(self.editor, "token_cache") and t in self.editor.token_cache:
                 continue
+            # Selektionstag ignorieren
             if t == "sel":
                 continue
 
