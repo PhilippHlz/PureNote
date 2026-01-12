@@ -1,24 +1,28 @@
 import tkinter as tk
 from tkinter import messagebox
 
-
+# Konstanten für die beiden Timer-Phasen
 class Timer(tk.Frame):
     WORK_PHASE = "WORK"
     BREAK_PHASE = "BREAK"
 
+     # Frame initialisieren
     def __init__(self, master, work_time=30, break_time=5):
         super().__init__(master)
 
-        # ===== State =====
+       # Eingabewerte in Minuten als Tk-Variablen
         self.work_minutes = tk.IntVar(value=work_time)
         self.break_minutes = tk.IntVar(value=break_time)
 
+        # Zeiten intern in Sekunden speichern
         self.work_time = work_time * 60
         self.break_time = break_time * 60
 
+        # Restlaufzeiten für beide Phasen
         self.remaining_work_time = self.work_time
         self.remaining_break_time = self.break_time
 
+        # Steuerungsvariablen für Start/Pause/Fortsetzen
         self.running = False
         self.phase = self.WORK_PHASE
         self.active_after = None
@@ -30,6 +34,7 @@ class Timer(tk.Frame):
         self.remaining_time_label = tk.Label(self, font=("Arial", 20))
         self.remaining_time_label.pack()
 
+        # Layout: Eingabebereich für Fokus- und Pausenzeit
         settings = tk.Frame(self)
         settings.pack(anchor="w", fill="x", pady=(15, 15))
 
@@ -52,17 +57,21 @@ class Timer(tk.Frame):
         self.reset_button = tk.Button(button_frame, text="Reset", command=self._reset_timer)
         self.reset_button.pack(side="left", fill="x", expand=True)
 
+        # Timer initial auf Ausgangszustand setzen
         self._reset_timer()
         self.pack(fill="x", pady=(40, 0))
 
+    # Übernimmt die eingestellten Zeiten aus den Boxen
     def _apply_settings(self):
         self.work_time = int(self.work_minutes.get()) * 60
         self.break_time = int(self.break_minutes.get()) * 60
         self.remaining_work_time = self.work_time
         self.remaining_break_time = self.break_time
 
+    # Start/Pause Umschalter
     def _toggle_timer(self):
         if not self.running:
+            # Beim ersten Start müssen die Einstellungen übernommen werden
             if self.is_fresh_start:
                 self._apply_settings()
                 self.is_fresh_start = False
@@ -72,6 +81,7 @@ class Timer(tk.Frame):
             self._update_ui()
             self._countdown()
         else:
+            # Timer pausieren
             self.running = False
             self.start_stop_button.config(text="Start")
             self._update_ui()
@@ -79,13 +89,16 @@ class Timer(tk.Frame):
                 self.after_cancel(self.active_after)
                 self.active_after = None
 
+    # Zählt jede Sekunde herunter
     def _countdown(self):
         remaining = self.remaining_work_time if self.phase == self.WORK_PHASE else self.remaining_break_time
 
+        # Phase fertig dann Wechsel zu Pause oder Fokus
         if remaining <= 0:
             self._on_phase_finished()
             return
 
+        # Eine Sekunde reduzieren
         if self.phase == self.WORK_PHASE:
             self.remaining_work_time -= 1
         else:
@@ -94,6 +107,7 @@ class Timer(tk.Frame):
         self._update_ui()
         self.active_after = self.after(1000, self._countdown)
 
+     # Wird ausgelöst, wenn eine Phase fertig ist
     def _on_phase_finished(self):
         if self.phase == self.WORK_PHASE:
             messagebox.showinfo("Timer", "Fokuszeit beendet. Pause startet.")
@@ -108,6 +122,7 @@ class Timer(tk.Frame):
         if self.running:
             self._countdown()
 
+    # Setzt Timer vollständig zurück
     def _reset_timer(self):
         if self.active_after:
             self.after_cancel(self.active_after)
@@ -121,6 +136,7 @@ class Timer(tk.Frame):
         self.start_stop_button.config(text="Start")
         self._update_ui()
 
+    # Aktualisiert UI abhängig von der aktuellen Phase und Restzeit
     def _update_ui(self):
         if self.phase == self.WORK_PHASE:
             self.phase_label.config(text="Fokuszeit")
@@ -129,6 +145,7 @@ class Timer(tk.Frame):
             self.phase_label.config(text="Pause", fg="blue")
             self.remaining_time_label.config(text=self._format_time(self.remaining_break_time))
 
+    # Formatiert Sekunden als MM:SS
     @staticmethod
     def _format_time(seconds):
         return f"{seconds // 60:02}:{seconds % 60:02}"
