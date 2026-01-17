@@ -18,6 +18,7 @@ class TextStyle:
     def generate_token(self):
         """
         Generiert einen individuellen Token anhand der übergebenen Parameter.
+        Wenn der Font-Family Leerzeichen enthält, werden diese durch Unterstriche ersetzt, sonst werden mehrere Tokens generiert.
         :return: Ein Token, der aus allen Parametern besteht.
         """
         safe_family = self.family.replace(' ', '_')

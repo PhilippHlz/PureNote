@@ -14,21 +14,20 @@ class Editor(Text):
         self.text_style_dto = text_style_dto
 
         # Speichert die generierten Tokens und deren zugehörigen TextStyles als dict
+        # Besteht aus token (String) als Key und dict (TextStyleDTO-Werte) als Value
         self.token_cache = {}
 
         # Beinhaltet den aktuellen Token der für tags verwendet wird
         self.current_token = None
         self.set_current_token()
 
-        # bindings
-
         # Zeichen einfügen
         self.bind('<KeyPress>', self._insert_char)
 
-        # Wenn mit der Maus durch den Text navigiert wird durch Klicken ändert sich der Stil
+        # Wenn mit der Maus durch den Text navigiert wird, durch Klicken ändert sich der Stil
         self.bind('<ButtonRelease-1>', self._change_text_style_with_cursor)
         
-        # Wenn mit den Pfeiltasten durch den Text navigiert wird ändert sich der Stil
+        # Wenn mit den Pfeiltasten durch den Text navigiert wird, ändert sich der Stil
         self.bind('<KeyRelease-Left>', self._change_text_style_with_cursor)
         self.bind('<KeyRelease-Right>', self._change_text_style_with_cursor)
         self.bind('<KeyRelease-Up>', self._change_text_style_with_cursor)
@@ -37,10 +36,13 @@ class Editor(Text):
         # Beim drücken von Return/Enter wird Stil zurück auf 'p' gesetzt
         self.bind('<KeyRelease-Return>', self._change_to_paragraph)
 
-        self.grid(row=0, column=1, sticky='nsew')
+        # Text widget konfigurieren
         self.configure(background='white')
-        self.focus()
         self.config(insertbackground='black')
+        self.focus()
+
+        # zum Parent grid hinzufügen
+        self.grid(row=0, column=1, sticky='nsew')
 
     def _insert_char(self, event):
         """
@@ -52,6 +54,7 @@ class Editor(Text):
         if event.keysym in ('Return', 'BackSpace', 'Left', 'Right', 'Up', 'Down'):
             return None
 
+        # Wenn das Zeichen printable ist, wird es mit dem aktuellen Token eingefügt und das weitere Standardverhalten verhindert.
         if event.char.isprintable():
 
             self.insert(INSERT, event.char, self.current_token)
@@ -68,6 +71,7 @@ class Editor(Text):
         """
         self.current_token = self.text_style_dto.map_to_text_style().generate_token()
 
+        # Wenn der Token bereits im Cache ist, muss kein neuer Tag generiert werden.
         if self.current_token in self.token_cache:
             return
 
@@ -83,12 +87,15 @@ class Editor(Text):
         Es werden alle alten Tags aus der Zeile entfernt und der aktuelle Token hinzugefügt.
         Wird verwendet, wenn das Absatzformat geändert wird.
         """
-        line_start = self.index('insert linestart -1c') #-1c, weil sonst der Zeilenanfang den tag der vorherigen Zeile übernimmt
+
+        line_start = self.index('insert linestart')
         line_end = self.index('insert lineend')
 
+        # Alle alten Tags aus der Zeile entfernen
         for token in self.token_cache:
             self.tag_remove(token, line_start, line_end)
 
+        # Den aktuellen Token auf die gesamte Zeile anwenden
         self.tag_add(self.current_token, line_start, line_end)
 
     def apply_style_to_selection(self):
@@ -101,9 +108,11 @@ class Editor(Text):
             selection_start = self.index(SEL_FIRST)
             selection_end = self.index(SEL_LAST)
 
+            # Alle alten Tags aus der Selektion entfernen
             for token in self.token_cache:
                 self.tag_remove(token, selection_start, selection_end)
 
+            # Den aktuellen Token auf die Selektion anwenden
             self.tag_add(self.current_token, selection_start, selection_end)
 
         except TclError:
@@ -111,13 +120,15 @@ class Editor(Text):
 
     def update_preset_style(self):
         """
-        Wird verwendet, wenn das Absatzformat Absatzformat aktualisieren Button geklickt wird.
+        Wird verwendet, wenn der "Absatzformat aktualisieren" Button geklickt wird.
         Ermittelt anhand des text_style_dto paragraph_key den alten Token und vergleicht diesen mit dem aktuellen Token.
         Wenn sich der Token geändert hat, werden alle Vorkommen des alten Tokens im Text durch den aktuellen Token ersetzt.
         Abschließend wird das neue TextStyle im paragraph_formats als preset gespeichert.
         """
         paragraph_key = self.text_style_dto.paragraph_key.get()
         old_token = self.paragraph_formats.get_style_preset(paragraph_key).generate_token()
+
+        # Wenn der alte Token und der aktuelle Token gleich sind, muss nichts geändert werden.
         if old_token == self.current_token:
             return
 
@@ -127,6 +138,7 @@ class Editor(Text):
             self.tag_remove(old_token, tag_ranges_old_token[i], tag_ranges_old_token[i+1])
             self.tag_add(self.current_token, tag_ranges_old_token[i], tag_ranges_old_token[i+1])
 
+        # Aktualisiere das Preset im paragraph_formats
         self.paragraph_formats.set_style_preset(paragraph_key, self.text_style_dto.map_to_text_style())
 
     def highlight_selection(self, tag, color):
@@ -157,12 +169,20 @@ class Editor(Text):
         Wird ausgelöst, wenn mit der Maus oder den Pfeiltasten durch den Text navigiert wird.
         Nimmt den Tag des linken Cursors und sucht den passenden TextStyle im Token-Cache.
         Wenn der Tag gefunden wird, wird der TextStyleDTO aktualisiert.
-        ToDo: Wenn in die Mitte eines Tasks geklickt wird sollte in diesem Still weiter geschrieben werden (mit Hintergrund).
-        ToDo: Oder ganzen Absatz einfärben
         """
-        last_cursor_pos = self.index(INSERT + '-1c')
-        tags_at_last_cursor_pos = self.tag_names(last_cursor_pos)
+        cursor_pos = self.index(INSERT)
+        line_start = self.index('insert linestart')
 
+        # Wenn der Cursor am Anfang der Zeile ist, wird der Tag an der aktuellen Cursor-Position verwendet.
+        if cursor_pos == line_start:
+            tags_at_last_cursor_pos = self.tag_names(cursor_pos)
+
+        # Wenn der Cursor nicht am Anfang der Zeile ist, wird der Tag links vom Cursor verwendet.
+        else:
+            last_cursor_pos = self.index(INSERT + '-1c')
+            tags_at_last_cursor_pos = self.tag_names(last_cursor_pos)
+
+        # Suche im Token-Cache nach einem passenden Tag
         for tag in tags_at_last_cursor_pos:
             if tag in self.token_cache:
                 self.current_token = tag

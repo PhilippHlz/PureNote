@@ -1,20 +1,29 @@
 from model.text_style import TextStyle
 
 class ParagraphFormats:
+    """
+    Repräsentiert eine Sammlung von Absatzformaten, die bei der Textverarbeitung verwendet werden können.
+    Die Formate können aktualisiert werden, um den Text einheitlich darzustellen.
+    """
+
     def __init__(self):
         """
         Repräsentiert eine Sammlung von Absatzformaten, die bei der Textverarbeitung verwendet werden können.
         Die Formate können aktualisiert werden, um den Text einheitlich darzustellen.
         """
+
+        # Presets
         self.style_presets = {
-            'p': TextStyle('Arial', 13, False, False, False, False, '#1f2937', 2, 6, 10),
-            'h1': TextStyle('Arial', 32, True, False, False, False, '#111827', 1, 26, 14),
-            'h2': TextStyle('Arial', 26, True, False, False, False, '#111827', 1, 22, 12),
-            'h3': TextStyle('Arial', 22, True, False, False, False, '#111827', 1, 18, 10),
-            'h4': TextStyle('Arial', 18, True, False, False, False, '#111827', 1, 14, 8),
-            'h5': TextStyle('Arial', 16, True, False, False, False, '#111827', 1, 10, 6),
-            'h6': TextStyle('Arial', 14, True, False, False, False, '#374151', 1, 8, 6),
+            'p': TextStyle('Arial', 12, False, False, False, False, '#212529', 2, 6, 10),
+            'h1': TextStyle('Arial', 32, True, False, False, False, '#45818e', 1, 26, 14),
+            'h2': TextStyle('Arial', 26, False, False, False, False, '#212529', 1, 22, 12),
+            'h3': TextStyle('Arial', 22, True, False, False, False, '#45818e', 1, 18, 10),
+            'h4': TextStyle('Arial', 18, True, False, False, False, '#212529', 1, 14, 8),
+            'h5': TextStyle('Arial', 16, True, False, False, False, '#212529', 1, 10, 6),
+            'h6': TextStyle('Arial', 14, True, False, False, False, '#212529', 1, 8, 6),
         }
+
+        # Token Map von Presets
         self.token_map = self._generate_token_map()
 
     def get_style_preset(self, paragraph_key):

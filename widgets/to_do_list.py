@@ -15,11 +15,11 @@ class ToDoList(Frame):
         self. on_delete_task_callback = on_delete_task_callback
         self.to_do_list = {}
 
-        self.grid(row=0, column=0, sticky='nsew', padx=15, pady=15)
-
+        # Schriftarten für Labels
         self.bold_font = Font(weight='bold', size=9)
         self.regular_font = Font(size=9)
 
+        # Überschrift
         Label(self, text='ToDo Hinzufügen', font=self.bold_font).pack(anchor='w')
 
         # Titel
@@ -35,6 +35,9 @@ class ToDoList(Frame):
         # Task hinzufügen Button
         Button(self, text='ToDo hinzufügen', command=on_add_task_button_callback).pack(anchor='w')
         Label(self, text='Deine ToDos', font=self.bold_font).pack(anchor='w', pady=(25, 10))
+
+        # Ins Parent-Grid einfügen
+        self.grid(row=0, column=0, sticky='n', padx=15, pady=15)
         
 
     def add_task(self):
@@ -48,12 +51,15 @@ class ToDoList(Frame):
         title = self.title.get().strip()
         description = self.description.get().strip()
 
+        # Prüfen ob Titel leer ist oder schon vorhanden, wenn vorhanden None zurückgeben (nichts machen)
         if not title or title in self.to_do_list:
             return None
 
+        # Neue Task erstellen und der to_do_list hinzufügen
         task = Task(self, title, description, delete_callback=self.remove_task)
         self.to_do_list[title] = task
 
+        # Textfelder leeren
         self.title.delete(0, END)
         self.description.delete(0, END)
         return task
@@ -90,7 +96,7 @@ class Task(Frame):
         # Obere Inhaltscontainer
         top_content = Frame(container)
         top_content.pack(fill='x')
-        Label(top_content, text=self.title, wraplength=200, justify='left', anchor='w').pack(side='left', fill='x')
+        Label(top_content, text=self.title, wraplength=200, justify='left', anchor='w').pack(side='left')
         Checkbutton(top_content, command=self._delete_self).pack(side='right')
 
         # Untere Inhaltscontainer, wenn Beschreibung vorhanden ist

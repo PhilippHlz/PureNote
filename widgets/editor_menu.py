@@ -12,9 +12,6 @@ class EditorMenu(Frame):
     Die werte werden über ein TextStyleDTO verwaltet, wenn sich diese ändern, werden die entsprechenden Traces getriggert.
     Bei Klick auf den Update-Button wird eine Callback-Funktion ausgeführt, die im App-Klasse definiert ist.
     """
-
-
-
     def __init__(self, parent, paragraph_formats, text_style_dto, update_button_callback):
         super().__init__(master=parent)
         self._create_grid(4, 10)
@@ -62,20 +59,17 @@ class EditorMenu(Frame):
 
         # Zeilenabstand
         Label(self, text='Zeilenabstand', font=bold_font).grid(row=7, columnspan=4, sticky='w', pady=(25, 0))
-        line_height_spinbox = Spinbox(self, from_=1, to=100, increment=1, textvariable=text_style_dto.line_height,
-                                      width=3)
+        line_height_spinbox = Spinbox(self, from_=1, to=100, increment=1, textvariable=text_style_dto.line_height, width=3)
         line_height_spinbox.grid(row=8, columnspan=4, sticky='ew')
 
         # Abstand vor Absatz
         Label(self, text='Abstand vor Absatz', font=regular_font).grid(row=9, columnspan=3, sticky='w')
-        space_before_spinbox = Spinbox(self, from_=0, to=100, increment=1, textvariable=text_style_dto.space_before,
-                                       width=3)
+        space_before_spinbox = Spinbox(self, from_=0, to=100, increment=1, textvariable=text_style_dto.space_before, width=3)
         space_before_spinbox.grid(row=9, column=3, columnspan=1, sticky='ew')
 
         # Abstand nach Absatz
         Label(self, text='Nach dem Absatz', font=regular_font).grid(row=10, columnspan=3, sticky='w')
-        space_after_spinbox = Spinbox(self, from_=0, to=100, increment=1, textvariable=text_style_dto.space_after,
-                                      width=3)
+        space_after_spinbox = Spinbox(self, from_=0, to=100, increment=1, textvariable=text_style_dto.space_after, width=3)
         space_after_spinbox.grid(row=10, column=3, columnspan=1, sticky='ew')
 
         self.pack();
